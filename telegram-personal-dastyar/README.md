@@ -41,3 +41,5 @@ curl -X POST "https://api.telegram.org/bot<TOKEN>/setWebhook" \
 برای آلبوم‌ها، تلگرام پایان گروه را به ربات اعلام نمی‌کند؛ پس از رسیدن همهٔ فایل‌ها `/review` را بزنید. هیچ فایل یا توکنی در گیت ثبت نمی‌شود.
 
 برای راه‌اندازی بدون واردکردن Telegram ID، مقدار `AUTHORIZED_USER_IDS=bootstrap` و یک `BOOTSTRAP_CODE` محرمانه تنظیم کنید. سپس فقط مالک با پیوند `https://t.me/<bot>?start=<BOOTSTRAP_CODE>` می‌تواند یک‌بار خود را ثبت کند؛ ربات از آن پس خصوصی می‌ماند.
+
+پس از واردکردن `TELEGRAM_BOT_TOKEN` به‌عنوان Cloudflare Secret، webhook را بدون افشای توکن با یک `POST` به `/setup` و header `X-Setup-Code` تنظیم کنید. این endpoint فقط با `BOOTSTRAP_CODE` پاسخ می‌دهد و خود Worker توکن را به Telegram می‌فرستد.

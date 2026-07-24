@@ -18,6 +18,7 @@ export class TelegramClient {
     return this.call<Array<{ message_id: number }>>("sendMediaGroup", { chat_id: chatId, media: media.map((item, index) => ({ type: item.type, media: item.fileId, ...(index === 0 ? { caption, parse_mode: "HTML" } : {}) })) });
   }
   answerCallbackQuery(id: string, text?: string, showAlert = false) { return this.call<boolean>("answerCallbackQuery", { callback_query_id: id, text, show_alert: showAlert }); }
+  setWebhook(url: string, secretToken: string) { return this.call<boolean>("setWebhook", { url, secret_token: secretToken, allowed_updates: ["message", "callback_query"], drop_pending_updates: false }); }
   getMe() { return this.call<{ username?: string }>("getMe", {}); }
   getChat(chatId: string) { return this.call<{ id: number; type: string }>("getChat", { chat_id: chatId }); }
 }
