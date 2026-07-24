@@ -43,3 +43,9 @@ curl -X POST "https://api.telegram.org/bot<TOKEN>/setWebhook" \
 برای راه‌اندازی بدون واردکردن Telegram ID، مقدار `AUTHORIZED_USER_IDS=bootstrap` و یک `BOOTSTRAP_CODE` محرمانه تنظیم کنید. سپس فقط مالک با پیوند `https://t.me/<bot>?start=<BOOTSTRAP_CODE>` می‌تواند یک‌بار خود را ثبت کند؛ ربات از آن پس خصوصی می‌ماند.
 
 پس از واردکردن `TELEGRAM_BOT_TOKEN` به‌عنوان Cloudflare Secret، webhook را بدون افشای توکن با یک `POST` به `/setup` و header `X-Setup-Code` تنظیم کنید. این endpoint فقط با `BOOTSTRAP_CODE` پاسخ می‌دهد و خود Worker توکن را به Telegram می‌فرستد.
+
+## راهنماهای عملیاتی
+
+- [امنیت و مدیریت Secretها](docs/SECURITY_FA.md)
+- [بازسازی و توسعه با Codex](docs/CODEX_RUNBOOK_FA.md)
+- [استقرار، بازیابی و تنظیم Cloudflare](docs/CLOUDFLARE_RUNBOOK_FA.md)
