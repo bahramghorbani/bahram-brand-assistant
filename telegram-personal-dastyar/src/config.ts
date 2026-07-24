@@ -20,7 +20,7 @@ export function configFromEnv(env: Env): Config {
   const defaults: Record<SettingKey, string> = {
     signature_text: normalize(env.DEFAULT_SIGNATURE_TEXT ?? "آخرین اخبار فناوری | هوش مصنوعی | کسب و کار"),
     signature_url: normalize(env.DEFAULT_SIGNATURE_URL ?? "https://t.me/bahrameghorbani"),
-    sponsor_text: normalize(env.DEFAULT_SPONSOR_TEXT ?? "رسانه فینتک ایران | پی کار"),
+    sponsor_text: normalize(env.DEFAULT_SPONSOR_TEXT ?? "رسانه فین‌تک ایران | پی کار"),
     sponsor_url: normalize(env.DEFAULT_SPONSOR_URL ?? "https://t.me/paykaarcom"),
     emojis: normalize(env.DEFAULT_EMOJIS ?? "🔥,🚀,⚡️,💻,🧠")
   };
