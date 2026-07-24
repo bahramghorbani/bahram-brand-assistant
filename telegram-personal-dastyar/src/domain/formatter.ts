@@ -13,7 +13,7 @@ export function decorate(input: string, settings: Record<SettingKey, string>, so
   }
   body = removeTrailingSourceFooter(body);
   body = addParagraphEmojis(body, settings.emojis);
-  const signature = `<blockquote><a href="${escapeHtml(settings.signature_url)}">${escapeHtml(settings.signature_text)}</a>\n\nSponsor\n<a href="${escapeHtml(settings.sponsor_url)}">${escapeHtml(settings.sponsor_text)}</a></blockquote>`;
+  const signature = `<blockquote>${escapeHtml(settings.signature_text)}\n\n───\n<a href="${escapeHtml(settings.signature_url)}">${escapeHtml(linkLabel(settings.signature_url))}</a>\n\n───\n🤝 Sponsor\n\n${escapeHtml(settings.sponsor_text)}\n<a href="${escapeHtml(settings.sponsor_url)}">${escapeHtml(linkLabel(settings.sponsor_url))}</a></blockquote>`;
   return `${escapeHtml(body).replace(/\n/g, "\n")}\n\n${signature}`;
 }
 
@@ -38,6 +38,7 @@ function removeTrailingSourceFooter(body: string): string {
   return lines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
 }
 function escapeRegExp(value: string) { return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+function linkLabel(url: string) { const match = url.match(/^https:\/\/(?:t\.me|telegram\.me)\/([A-Za-z0-9_]{3,})\/?$/u); return match ? `@${match[1]}` : url; }
 
 export function telegramLimitError(value: string, type: "text" | "caption"): string | undefined {
   const limit = type === "text" ? 4096 : 1024;

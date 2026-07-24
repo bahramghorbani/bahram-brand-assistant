@@ -18,9 +18,9 @@ export function configFromEnv(env: Env): Config {
   if ((!ids.length || ids.some((id) => !/^\d+$/u.test(id))) && !bootstrapMode) throw new Error("AUTHORIZED_USER_IDS must contain numeric IDs or bootstrap");
   if (bootstrapMode && !/^[A-Za-z0-9_-]{24,128}$/.test(bootstrapCode ?? "")) throw new Error("BOOTSTRAP_CODE must be a secure URL-safe value");
   const defaults: Record<SettingKey, string> = {
-    signature_text: normalize(env.DEFAULT_SIGNATURE_TEXT ?? "بهرام قربانی"),
+    signature_text: normalize(env.DEFAULT_SIGNATURE_TEXT ?? "آخرین اخبار فناوری | هوش مصنوعی | کسب و کار"),
     signature_url: normalize(env.DEFAULT_SIGNATURE_URL ?? "https://t.me/bahrameghorbani"),
-    sponsor_text: normalize(env.DEFAULT_SPONSOR_TEXT ?? "پی‌کار"),
+    sponsor_text: normalize(env.DEFAULT_SPONSOR_TEXT ?? "رسانه فینتک ایران | پی کار"),
     sponsor_url: normalize(env.DEFAULT_SPONSOR_URL ?? "https://t.me/paykaarcom"),
     emojis: normalize(env.DEFAULT_EMOJIS ?? "🔥,🚀,⚡️,💻,🧠")
   };
