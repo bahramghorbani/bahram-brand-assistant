@@ -6,6 +6,7 @@ export interface Env {
   TELEGRAM_BOT_TOKEN: string;
   TELEGRAM_WEBHOOK_SECRET: string;
   AUTHORIZED_USER_IDS: string;
+  BOOTSTRAP_CODE?: string;
   DESTINATION_CHAT_ID: string;
   DESTINATION_CHANNEL_USERNAME?: string;
   DEFAULT_SIGNATURE_TEXT?: string;

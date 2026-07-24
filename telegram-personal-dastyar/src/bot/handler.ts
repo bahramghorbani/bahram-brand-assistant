@@ -4,7 +4,7 @@ import { Store } from "../storage/store";
 import { TelegramClient } from "../telegram/client";
 import type { ContentType, Draft, Media, TelegramMessage, TelegramUpdate } from "../types";
 
-const isAuthorized = (config: Config, id: number | undefined) => id !== undefined && config.authorizedUserIds.has(String(id));
+const isAuthorized = async (store: Store, config: Config, id: number | undefined) => id !== undefined && (config.authorizedUserIds.has(String(id)) || await store.isBootstrapOwner(String(id)));
 const content = (message: TelegramMessage) => message.text ?? message.caption ?? "";
 const buttons = (id: string) => ({ inline_keyboard: [[{ text: "✅ تأیید و انتشار", callback_data: `publish:${id}` }], [{ text: "✏️ ویرایش متن", callback_data: `edit:${id}` }, { text: "❌ لغو", callback_data: `cancel:${id}` }]] });
 const settingsButtons = { inline_keyboard: [[{ text: "✍️ متن امضا", callback_data: "setting:signature_text" }, { text: "🔗 لینک امضا", callback_data: "setting:signature_url" }], [{ text: "🤝 متن اسپانسر", callback_data: "setting:sponsor_text" }, { text: "🔗 لینک اسپانسر", callback_data: "setting:sponsor_url" }], [{ text: "🔥 ایموجی‌ها", callback_data: "setting:emojis" }]] };
@@ -13,7 +13,10 @@ export async function handleUpdate(update: TelegramUpdate, store: Store, telegra
   if (!(await store.acceptUpdate(update.update_id))) return;
   if (update.callback_query) return handleCallback(update.callback_query, store, telegram, config);
   const message = update.message; if (!message) return;
-  if (!isAuthorized(config, message.from?.id)) { if (message.from) await telegram.sendMessage(message.chat.id, "این ربات خصوصی است و دسترسی شما تأیید نشده است."); return; }
+  if (!(await isAuthorized(store, config, message.from?.id))) {
+    if (message.from && message.chat.type === "private" && await tryBootstrap(message, store, config)) return telegram.sendMessage(message.chat.id, "مالک ربات با موفقیت ثبت شد. حالا می‌توانید پست بفرستید یا /settings را باز کنید.");
+    if (message.from) await telegram.sendMessage(message.chat.id, "این ربات خصوصی است و دسترسی شما تأیید نشده است."); return;
+  }
   if (message.chat.type !== "private") { await telegram.sendMessage(message.chat.id, "برای حفظ امنیت، پیام را فقط در گفت‌وگوی خصوصی با ربات بفرستید."); return; }
   const command = message.text?.trim().split(/\s+/u)[0]?.toLowerCase();
   if (command?.startsWith("/")) return handleCommand(command, message, store, telegram, config);
@@ -55,7 +58,7 @@ async function handleCommand(command: string, message: TelegramMessage, store: S
 }
 
 async function handleCallback(callback: NonNullable<TelegramUpdate["callback_query"]>, store: Store, telegram: TelegramClient, config: Config): Promise<unknown> {
-  if (!isAuthorized(config, callback.from.id)) return telegram.answerCallbackQuery(callback.id, "دسترسی ندارید.");
+  if (!(await isAuthorized(store, config, callback.from.id))) return telegram.answerCallbackQuery(callback.id, "دسترسی ندارید.");
   const [action, value] = callback.data?.split(":") ?? [];
   if (action === "setting" && isSettingKey(value)) { await store.setPrompt(String(callback.from.id), value); await telegram.answerCallbackQuery(callback.id); return telegram.sendMessage(callback.message?.chat.id ?? callback.from.id, promptFor(value)); }
   if (!value || !["publish", "edit", "cancel"].includes(action ?? "")) return telegram.answerCallbackQuery(callback.id, "دکمه نامعتبر است.");
@@ -78,6 +81,10 @@ async function preview(draft: Draft, store: Store, telegram: TelegramClient, cha
 }
 function mediaOf(message: TelegramMessage): Media | undefined { if (message.photo?.at(-1)) return { type: "photo", fileId: message.photo.at(-1)!.file_id }; if (message.video) return { type: "video", fileId: message.video.file_id }; if (message.audio) return { type: "audio", fileId: message.audio.file_id }; if (message.document) return { type: "document", fileId: message.document.file_id }; }
 function idOf() { return crypto.randomUUID().replaceAll("-", "").slice(0, 12); }
+async function tryBootstrap(message: TelegramMessage, store: Store, config: Config): Promise<boolean> {
+  const code = message.text?.trim().match(/^\/start\s+([A-Za-z0-9_-]{24,128})$/u)?.[1];
+  return Boolean(code && config.bootstrapCode && code === config.bootstrapCode && await store.claimBootstrapOwner(String(message.from!.id)));
+}
 function isSettingKey(value: string | undefined): value is SettingKey { return value === "signature_text" || value === "signature_url" || value === "sponsor_text" || value === "sponsor_url" || value === "emojis"; }
 function promptFor(key: SettingKey) { return ({ signature_text: "متن امضا را بفرستید؛ مثلا: بهرام قربانی", signature_url: "لینک امضا را بفرستید؛ مثلا: https://t.me/bahrameghorbani", sponsor_text: "متن اسپانسر را بفرستید؛ مثلا: پی‌کار", sponsor_url: "لینک اسپانسر را بفرستید؛ مثلا: https://t.me/paykaarcom", emojis: "ایموجی‌ها را با کاما جدا کنید؛ مثلا: 🔥,🚀,⚡️,💻,🧠" })[key]; }
 async function settingPrompt(store: Store, ownerId: string): Promise<SettingKey | undefined> { const value = await store.prompt(ownerId); return isSettingKey(value) ? value : undefined; }

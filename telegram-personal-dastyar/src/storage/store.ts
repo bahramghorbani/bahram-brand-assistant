@@ -14,6 +14,11 @@ export class Store {
   setSetting(key: SettingKey, value: string) { return this.db.prepare("INSERT INTO settings(key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP").bind(key, value).run(); }
   setPrompt(ownerId: string, key: string) { return this.db.prepare("INSERT INTO settings(key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = CURRENT_TIMESTAMP").bind(`prompt:${ownerId}`, key).run(); }
   async prompt(ownerId: string): Promise<string | undefined> { return (await this.db.prepare("SELECT value FROM settings WHERE key=?").bind(`prompt:${ownerId}`).first<{ value: string }>())?.value; }
+  async isBootstrapOwner(ownerId: string): Promise<boolean> { return (await this.db.prepare("SELECT value FROM settings WHERE key='authorized_owner_id'").first<{ value: string }>())?.value === ownerId; }
+  async claimBootstrapOwner(ownerId: string): Promise<boolean> {
+    const result = await this.db.prepare("INSERT OR IGNORE INTO settings(key, value) VALUES ('authorized_owner_id', ?)").bind(ownerId).run();
+    return (result.meta.changes ?? 0) === 1 || await this.isBootstrapOwner(ownerId);
+  }
   async create(input: { id: string; ownerId: string; type: ContentType; original: string; cleaned: string; media?: Media[]; groupId?: string; status: DraftStatus; expiresAt: string }) {
     await this.db.prepare("INSERT INTO drafts(id,owner_id,media_group_id,content_type,original_content,cleaned_content,media_json,status,expires_at) VALUES(?,?,?,?,?,?,?,?,?)")
       .bind(input.id, input.ownerId, input.groupId ?? null, input.type, input.original, input.cleaned, input.media ? JSON.stringify(input.media) : null, input.status, input.expiresAt).run();

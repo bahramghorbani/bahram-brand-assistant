@@ -1,0 +1,15 @@
+import { describe, expect, it } from "vitest";
+import { configFromEnv } from "../src/config";
+import type { Env } from "../src/types";
+
+const base = { TELEGRAM_BOT_TOKEN: "token", TELEGRAM_WEBHOOK_SECRET: "a-valid-webhook-secret-value", AUTHORIZED_USER_IDS: "bootstrap", BOOTSTRAP_CODE: "A23456789012345678901234", DESTINATION_CHAT_ID: "@bahrameghorbani" } as Env;
+
+describe("bootstrap configuration", () => {
+  it("allows a secure one-time owner bootstrap", () => {
+    expect(configFromEnv(base).authorizedUserIds.size).toBe(0);
+    expect(configFromEnv(base).bootstrapCode).toBe(base.BOOTSTRAP_CODE);
+  });
+  it("rejects a weak bootstrap code", () => {
+    expect(() => configFromEnv({ ...base, BOOTSTRAP_CODE: "short" })).toThrow("BOOTSTRAP_CODE");
+  });
+});

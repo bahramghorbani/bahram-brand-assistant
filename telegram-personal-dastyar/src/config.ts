@@ -2,7 +2,7 @@ import type { Env } from "./types";
 
 export interface Config {
   authorizedUserIds: Set<string>; destinationChatId: string; destinationUsername?: string;
-  defaults: Record<SettingKey, string>;
+  bootstrapCode?: string; defaults: Record<SettingKey, string>;
 }
 export type SettingKey = "signature_text" | "signature_url" | "sponsor_text" | "sponsor_url" | "emojis";
 
@@ -13,7 +13,10 @@ export function configFromEnv(env: Env): Config {
   for (const key of ["TELEGRAM_BOT_TOKEN", "TELEGRAM_WEBHOOK_SECRET", "AUTHORIZED_USER_IDS", "DESTINATION_CHAT_ID"] as const) if (!env[key]?.trim()) throw new Error(`Missing ${key}`);
   if (!/^[A-Za-z0-9_-]{16,256}$/.test(env.TELEGRAM_WEBHOOK_SECRET)) throw new Error("Invalid TELEGRAM_WEBHOOK_SECRET");
   const ids = env.AUTHORIZED_USER_IDS.split(",").map((value) => value.trim()).filter(Boolean);
-  if (!ids.length || ids.some((id) => !/^\d+$/u.test(id))) throw new Error("AUTHORIZED_USER_IDS must contain numeric IDs");
+  const bootstrapCode = env.BOOTSTRAP_CODE?.trim();
+  const bootstrapMode = ids.length === 1 && ids[0] === "bootstrap";
+  if ((!ids.length || ids.some((id) => !/^\d+$/u.test(id))) && !bootstrapMode) throw new Error("AUTHORIZED_USER_IDS must contain numeric IDs or bootstrap");
+  if (bootstrapMode && !/^[A-Za-z0-9_-]{24,128}$/.test(bootstrapCode ?? "")) throw new Error("BOOTSTRAP_CODE must be a secure URL-safe value");
   const defaults: Record<SettingKey, string> = {
     signature_text: normalize(env.DEFAULT_SIGNATURE_TEXT ?? "بهرام قربانی"),
     signature_url: normalize(env.DEFAULT_SIGNATURE_URL ?? "https://t.me/bahrameghorbani"),
@@ -22,7 +25,7 @@ export function configFromEnv(env: Env): Config {
     emojis: normalize(env.DEFAULT_EMOJIS ?? "🔥,🚀,⚡️,💻,🧠")
   };
   if (!validUrl(defaults.signature_url) || !validUrl(defaults.sponsor_url)) throw new Error("Default signature and sponsor URLs must be HTTPS");
-  return { authorizedUserIds: new Set(ids), destinationChatId: env.DESTINATION_CHAT_ID, destinationUsername: env.DESTINATION_CHANNEL_USERNAME?.replace(/^@/u, ""), defaults };
+  return { authorizedUserIds: new Set(bootstrapMode ? [] : ids), destinationChatId: env.DESTINATION_CHAT_ID, destinationUsername: env.DESTINATION_CHANNEL_USERNAME?.replace(/^@/u, ""), bootstrapCode, defaults };
 }
 
 export function validateSetting(key: SettingKey, value: string): string | undefined {
