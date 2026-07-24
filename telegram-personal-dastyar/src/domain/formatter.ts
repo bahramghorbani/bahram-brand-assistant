@@ -13,7 +13,7 @@ export function decorate(input: string, settings: Record<SettingKey, string>, so
   }
   body = removeTrailingSourceFooter(body);
   body = addParagraphEmojis(body, settings.emojis);
-  const signature = `<blockquote>${escapeHtml(settings.signature_text)}\n\n───\n<a href="${escapeHtml(settings.signature_url)}">${escapeHtml(linkLabel(settings.signature_url))}</a>\n\n───\n🤝 Sponsor\n\n${escapeHtml(settings.sponsor_text)}\n<a href="${escapeHtml(settings.sponsor_url)}">${escapeHtml(linkLabel(settings.sponsor_url))}</a></blockquote>`;
+  const signature = `<blockquote><b>${escapeHtml(settings.signature_text)}</b>\n\n───\n<a href="${escapeHtml(settings.signature_url)}">${escapeHtml(linkLabel(settings.signature_url))}</a>\n\n───\n🤝 <b>Sponsor</b>\n\n${escapeHtml(settings.sponsor_text)}\n<a href="${escapeHtml(settings.sponsor_url)}">${escapeHtml(linkLabel(settings.sponsor_url))}</a></blockquote>`;
   return `${escapeHtml(body).replace(/\n/g, "\n")}\n\n${signature}`;
 }
 
