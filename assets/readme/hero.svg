@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360" role="img" aria-labelledby="title desc">
+  <title id="title">Bahram Brand Assistant</title><desc id="desc">Private brand automation projects, beginning with a Telegram reposting assistant.</desc>
+  <rect width="1200" height="360" rx="28" fill="#162b45"/><g font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif">
+    <text x="58" y="73" fill="#8ac7d6" font-size="20" font-weight="700">PRIVATE BRAND AUTOMATION</text><text x="58" y="137" fill="#fff" font-size="52" font-weight="800">Bahram Brand Assistant</text>
+    <text x="58" y="181" fill="#c4d2e0" font-size="25">Independent, deployable tools for preparing and</text><text x="58" y="215" fill="#c4d2e0" font-size="25">publishing branded content with owner control.</text>
+    <rect x="58" y="259" width="244" height="42" rx="21" fill="#1f7d91"/><text x="82" y="287" fill="#fff" font-size="20" font-weight="700">Telegram + Cloudflare</text>
+    <rect x="766" y="45" width="355" height="245" rx="20" fill="#e8f1f2"/><path d="M842 135L1002 84L955 233L898 185L860 211Z" fill="#267e93"/><path d="M898 185L955 233" stroke="#174858" stroke-width="10" stroke-linecap="round"/><circle cx="1054" cy="96" r="25" fill="#e58e5b"/><path d="M1054 78V114M1036 96H1072" stroke="#fff" stroke-width="6" stroke-linecap="round"/>
+    <text x="801" y="267" fill="#31586a" font-size="20" font-weight="700">Draft → Review → Publish</text>
+  </g>
+</svg>
