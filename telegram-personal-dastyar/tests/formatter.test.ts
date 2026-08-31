@@ -30,9 +30,9 @@ describe("decorate", () => {
   it("renders the custom emoji and bordered community links in the native signature card", () => {
     const value = decorate("خبر", settings);
     expect(value).toContain('<b><tg-emoji emoji-id="5368324170671202286">🧑</tg-emoji> <a href="https://t.me/bahrameghorbani">Join the Bahram Community</a></b>');
-    expect(value).toContain('<a href="https://x.com/bahr4m"><tg-emoji emoji-id="1000000000000000001">⬛</tg-emoji> X · @bahr4m</a>');
-    expect(value).toContain('<a href="https://t.me/bahrameghorbani"><tg-emoji emoji-id="1000000000000000003">🔵</tg-emoji> Telegram · @bahrameghorbani</a>');
-    expect(value).toContain('<a href="https://instagram.com/bahrameghorbani"><tg-emoji emoji-id="1000000000000000002">📸</tg-emoji> Instagram · @bahrameghorbani</a>');
+    expect(value).toContain('<a href="https://x.com/bahr4m"><tg-emoji emoji-id="1000000000000000001">⬛</tg-emoji> @bahr4m</a>');
+    expect(value).toContain('<a href="https://t.me/bahrameghorbani"><tg-emoji emoji-id="1000000000000000003">🔵</tg-emoji> @bahrameghorbani</a>');
+    expect(value).toContain('<a href="https://instagram.com/bahrameghorbani"><tg-emoji emoji-id="1000000000000000002">📸</tg-emoji> @bahrameghorbani</a>');
     expect(value).toContain('<a href="https://paykaar.com">🌐 paykaar.com</a>');
     expect(value).toContain("<table bordered compact>");
     expect(value).not.toContain("╭");
@@ -46,8 +46,8 @@ describe("decorate", () => {
 
   it("uses recognizable standard icons until social custom emojis are configured", () => {
     const value = decorate("خبر", { ...settings, x_emoji_id: "", instagram_emoji_id: "", telegram_emoji_id: "" });
-    expect(value).toContain('<a href="https://x.com/bahr4m">⬛ 𝕏 X · @bahr4m</a>');
-    expect(value).toContain('<a href="https://instagram.com/bahrameghorbani">📸 Instagram · @bahrameghorbani</a>');
-    expect(value).toContain('<a href="https://t.me/bahrameghorbani">🔵 Telegram · @bahrameghorbani</a>');
+    expect(value).toContain('<a href="https://x.com/bahr4m">⬛ 𝕏 @bahr4m</a>');
+    expect(value).toContain('<a href="https://instagram.com/bahrameghorbani">📸 @bahrameghorbani</a>');
+    expect(value).toContain('<a href="https://t.me/bahrameghorbani">🔵 @bahrameghorbani</a>');
   });
 });
