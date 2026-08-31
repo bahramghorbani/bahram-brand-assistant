@@ -19,7 +19,10 @@ export function decorate(input: string, settings: Record<SettingKey, string>, so
     .map((paragraph) => `<p>${escapeHtml(paragraph).replace(/\n/g, "<br>")}</p>`)
     .join("");
   const avatar = settings.avatar_emoji_id ? `<tg-emoji emoji-id="${escapeHtml(settings.avatar_emoji_id)}">🧑</tg-emoji> ` : "";
-  const signature = `<hr/><p><b>${avatar}<a href="${escapeHtml(settings.signature_url)}">${escapeHtml(settings.signature_text)}</a></b></p><table bordered compact><tr><td align="center"><a href="https://x.com/bahr4m">𝕏 @bahr4m</a></td><td align="center"><a href="https://instagram.com/bahrameghorbani">◎ @bahrameghorbani</a></td></tr><tr><td align="center"><a href="https://t.me/bahrameghorbani">✈️ @bahrameghorbani</a></td><td align="center"><a href="${escapeHtml(settings.sponsor_url)}">🤝 Sponsor · ${escapeHtml(settings.sponsor_text)}</a></td></tr><tr><td colspan="2" align="center"><a href="https://paykaar.com">🌐 paykaar.com</a></td></tr></table>`;
+  const xIcon = customEmoji(settings.x_emoji_id, "⬛", "⬛ 𝕏");
+  const instagramIcon = customEmoji(settings.instagram_emoji_id, "📸", "📸");
+  const telegramIcon = customEmoji(settings.telegram_emoji_id, "🔵", "🔵");
+  const signature = `<hr/><p><b>${avatar}<a href="${escapeHtml(settings.signature_url)}">${escapeHtml(settings.signature_text)}</a></b></p><table bordered compact><tr><td align="center"><a href="https://x.com/bahr4m">${xIcon} X · @bahr4m</a></td><td align="center"><a href="https://instagram.com/bahrameghorbani">${instagramIcon} Instagram · @bahrameghorbani</a></td></tr><tr><td align="center"><a href="https://t.me/bahrameghorbani">${telegramIcon} Telegram · @bahrameghorbani</a></td><td align="center"><a href="${escapeHtml(settings.sponsor_url)}">🤝 Sponsor · ${escapeHtml(settings.sponsor_text)}</a></td></tr><tr><td colspan="2" align="center"><a href="https://paykaar.com">🌐 paykaar.com</a></td></tr></table>`;
   return `${bodyHtml}${signature}`;
 }
 
@@ -44,6 +47,7 @@ function removeTrailingSourceFooter(body: string): string {
   return lines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
 }
 function escapeRegExp(value: string) { return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
+function customEmoji(id: string, alt: string, fallback: string) { return id ? `<tg-emoji emoji-id="${escapeHtml(id)}">${alt}</tg-emoji>` : fallback; }
 export function telegramLimitError(value: string): string | undefined {
   const limit = 32768;
   return [...value.replace(/<[^>]+>/g, "")].length > limit ? `متن نهایی از سقف ${limit} کاراکتر Rich Message بیشتر است.` : undefined;

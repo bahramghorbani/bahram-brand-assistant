@@ -15,6 +15,9 @@ export interface Env {
   DEFAULT_SPONSOR_URL?: string;
   DEFAULT_EMOJIS?: string;
   DEFAULT_AVATAR_EMOJI_ID?: string;
+  DEFAULT_X_EMOJI_ID?: string;
+  DEFAULT_INSTAGRAM_EMOJI_ID?: string;
+  DEFAULT_TELEGRAM_EMOJI_ID?: string;
 }
 
 export interface Media { type: Exclude<ContentType, "text" | "album">; fileId: string; }

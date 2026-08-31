@@ -4,7 +4,7 @@ export interface Config {
   authorizedUserIds: Set<string>; destinationChatId: string; destinationUsername?: string;
   bootstrapCode?: string; defaults: Record<SettingKey, string>;
 }
-export type SettingKey = "signature_text" | "signature_url" | "sponsor_text" | "sponsor_url" | "emojis" | "avatar_emoji_id";
+export type SettingKey = "signature_text" | "signature_url" | "sponsor_text" | "sponsor_url" | "emojis" | "avatar_emoji_id" | "x_emoji_id" | "instagram_emoji_id" | "telegram_emoji_id";
 
 const normalize = (value: string) => value.replace(/\r\n?/g, "\n").trim();
 const validUrl = (value: string) => /^https:\/\/(?:t\.me\/|telegram\.me\/|[a-z0-9.-]+\/)/iu.test(value);
@@ -18,15 +18,20 @@ export function configFromEnv(env: Env): Config {
   if ((!ids.length || ids.some((id) => !/^\d+$/u.test(id))) && !bootstrapMode) throw new Error("AUTHORIZED_USER_IDS must contain numeric IDs or bootstrap");
   if (bootstrapMode && !/^[A-Za-z0-9_-]{24,128}$/.test(bootstrapCode ?? "")) throw new Error("BOOTSTRAP_CODE must be a secure URL-safe value");
   const defaults: Record<SettingKey, string> = {
-    signature_text: normalize(env.DEFAULT_SIGNATURE_TEXT ?? "آخرین اخبار فناوری | هوش مصنوعی | کسب و کار"),
+    signature_text: normalize(env.DEFAULT_SIGNATURE_TEXT ?? "Join the Bahram Community"),
     signature_url: normalize(env.DEFAULT_SIGNATURE_URL ?? "https://t.me/bahrameghorbani"),
-    sponsor_text: normalize(env.DEFAULT_SPONSOR_TEXT ?? "رسانه فین‌تک ایران | پی کار"),
+    sponsor_text: normalize(env.DEFAULT_SPONSOR_TEXT ?? "رسانه فین‌تک | پی‌کار"),
     sponsor_url: normalize(env.DEFAULT_SPONSOR_URL ?? "https://t.me/paykaarcom"),
     emojis: normalize(env.DEFAULT_EMOJIS ?? "🔥,🚀,⚡️,💻,🧠"),
-    avatar_emoji_id: normalize(env.DEFAULT_AVATAR_EMOJI_ID ?? "")
+    avatar_emoji_id: normalize(env.DEFAULT_AVATAR_EMOJI_ID ?? ""),
+    x_emoji_id: normalize(env.DEFAULT_X_EMOJI_ID ?? ""),
+    instagram_emoji_id: normalize(env.DEFAULT_INSTAGRAM_EMOJI_ID ?? ""),
+    telegram_emoji_id: normalize(env.DEFAULT_TELEGRAM_EMOJI_ID ?? "")
   };
   if (!validUrl(defaults.signature_url) || !validUrl(defaults.sponsor_url)) throw new Error("Default signature and sponsor URLs must be HTTPS");
-  if (defaults.avatar_emoji_id && !/^\d+$/u.test(defaults.avatar_emoji_id)) throw new Error("DEFAULT_AVATAR_EMOJI_ID must be numeric");
+  for (const [envKey, settingKey] of [["DEFAULT_AVATAR_EMOJI_ID", "avatar_emoji_id"], ["DEFAULT_X_EMOJI_ID", "x_emoji_id"], ["DEFAULT_INSTAGRAM_EMOJI_ID", "instagram_emoji_id"], ["DEFAULT_TELEGRAM_EMOJI_ID", "telegram_emoji_id"]] as const) {
+    if (defaults[settingKey] && !/^\d+$/u.test(defaults[settingKey])) throw new Error(`${envKey} must be numeric`);
+  }
   return { authorizedUserIds: new Set(bootstrapMode ? [] : ids), destinationChatId: env.DESTINATION_CHAT_ID, destinationUsername: env.DESTINATION_CHANNEL_USERNAME?.replace(/^@/u, ""), bootstrapCode, defaults };
 }
 
@@ -34,6 +39,10 @@ export function validateSetting(key: SettingKey, value: string): string | undefi
   if (!value.trim() || value.length > 200) return "مقدار باید بین ۱ تا ۲۰۰ کاراکتر باشد.";
   if ((key === "signature_url" || key === "sponsor_url") && !validUrl(value.trim())) return "آدرس باید HTTPS باشد؛ مانند https://t.me/paykaarcom";
   if (key === "emojis" && value.split(",").filter(Boolean).length > 12) return "حداکثر ۱۲ ایموجی، با کاما از هم جدا شوند.";
-  if (key === "avatar_emoji_id" && !/^\d+$/u.test(value.trim())) return "فقط یک Custom Emoji را بفرستید؛ ایموجی معمولی قابل ذخیره نیست.";
+  if (isCustomEmojiSetting(key) && !/^\d+$/u.test(value.trim())) return "فقط یک Custom Emoji را بفرستید؛ ایموجی معمولی قابل ذخیره نیست.";
   return undefined;
+}
+
+export function isCustomEmojiSetting(key: SettingKey): boolean {
+  return key === "avatar_emoji_id" || key === "x_emoji_id" || key === "instagram_emoji_id" || key === "telegram_emoji_id";
 }

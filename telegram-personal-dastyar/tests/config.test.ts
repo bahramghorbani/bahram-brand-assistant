@@ -9,8 +9,14 @@ describe("bootstrap configuration", () => {
     expect(configFromEnv(base).authorizedUserIds.size).toBe(0);
     expect(configFromEnv(base).bootstrapCode).toBe(base.BOOTSTRAP_CODE);
     expect(configFromEnv(base).defaults.avatar_emoji_id).toBe("");
+    expect((configFromEnv(base).defaults as Record<string, string>).x_emoji_id).toBe("");
+    expect((configFromEnv(base).defaults as Record<string, string>).instagram_emoji_id).toBe("");
+    expect((configFromEnv(base).defaults as Record<string, string>).telegram_emoji_id).toBe("");
   });
   it("rejects a weak bootstrap code", () => {
     expect(() => configFromEnv({ ...base, BOOTSTRAP_CODE: "short" })).toThrow("BOOTSTRAP_CODE");
+  });
+  it("rejects a non-numeric social custom emoji id", () => {
+    expect(() => configFromEnv({ ...base, DEFAULT_X_EMOJI_ID: "not-an-id" } as Env)).toThrow("DEFAULT_X_EMOJI_ID");
   });
 });

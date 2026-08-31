@@ -76,5 +76,6 @@ https://t.me/dastyarbahramBot?start=<BOOTSTRAP_CODE>
 2. یک متن کوتاه بفرستید و بررسی کنید ایموجی‌ها، عنوان انگلیسی و جدول bordered کارت Rich Message درست هستند.
 3. دکمهٔ تأیید را بزنید و انتشار در `@bahrameghorbani` را کنترل کنید.
 4. برای آلبوم، همهٔ فایل‌ها را بفرستید و سپس `/review` را بزنید.
+5. در `/settings` می‌توانید Custom Emoji آواتار و لوگوهای X، Instagram و Telegram را جداگانه ذخیره کنید.
 
 اگر webhook پاسخ نداد، ابتدا Secretها و دسترسی ادمینِ ربات در کانال را بررسی کنید؛ سپس `/setup` را دوباره با bootstrap code اجرا کنید.

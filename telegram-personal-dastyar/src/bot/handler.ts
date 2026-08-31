@@ -1,4 +1,4 @@
-import { type Config, type SettingKey, validateSetting } from "../config";
+import { type Config, isCustomEmojiSetting, type SettingKey, validateSetting } from "../config";
 import { decorate, telegramLimitError } from "../domain/formatter";
 import { Store } from "../storage/store";
 import { TelegramClient } from "../telegram/client";
@@ -7,7 +7,7 @@ import type { ContentType, Draft, Media, TelegramMessage, TelegramUpdate } from 
 const isAuthorized = async (store: Store, config: Config, id: number | undefined) => id !== undefined && (config.authorizedUserIds.has(String(id)) || await store.isBootstrapOwner(String(id)));
 const content = (message: TelegramMessage) => message.text ?? message.caption ?? "";
 const buttons = (id: string) => ({ inline_keyboard: [[{ text: "✅ تأیید و انتشار", callback_data: `publish:${id}` }], [{ text: "✏️ ویرایش متن", callback_data: `edit:${id}` }, { text: "❌ لغو", callback_data: `cancel:${id}` }]] });
-const settingsButtons = { inline_keyboard: [[{ text: "✍️ متن امضا", callback_data: "setting:signature_text" }, { text: "🔗 لینک امضا", callback_data: "setting:signature_url" }], [{ text: "🤝 متن اسپانسر", callback_data: "setting:sponsor_text" }, { text: "🔗 لینک اسپانسر", callback_data: "setting:sponsor_url" }], [{ text: "🔥 ایموجی‌ها", callback_data: "setting:emojis" }], [{ text: "🧑 آواتار کارت", callback_data: "setting:avatar_emoji_id" }]] };
+const settingsButtons = { inline_keyboard: [[{ text: "✍️ متن امضا", callback_data: "setting:signature_text" }, { text: "🔗 لینک امضا", callback_data: "setting:signature_url" }], [{ text: "🤝 متن اسپانسر", callback_data: "setting:sponsor_text" }, { text: "🔗 لینک اسپانسر", callback_data: "setting:sponsor_url" }], [{ text: "🔥 ایموجی‌ها", callback_data: "setting:emojis" }], [{ text: "🧑 آواتار کارت", callback_data: "setting:avatar_emoji_id" }], [{ text: "⬛ آیکون X", callback_data: "setting:x_emoji_id" }, { text: "📸 آیکون Instagram", callback_data: "setting:instagram_emoji_id" }], [{ text: "🔵 آیکون Telegram", callback_data: "setting:telegram_emoji_id" }]] };
 
 export async function handleUpdate(update: TelegramUpdate, store: Store, telegram: TelegramClient, config: Config): Promise<unknown> {
   if (!(await store.acceptUpdate(update.update_id))) return;
@@ -83,15 +83,15 @@ async function tryBootstrap(message: TelegramMessage, store: Store, config: Conf
   const code = message.text?.trim().match(/^\/start\s+([A-Za-z0-9_-]{24,128})$/u)?.[1];
   return Boolean(code && config.bootstrapCode && code === config.bootstrapCode && await store.claimBootstrapOwner(String(message.from!.id)));
 }
-function isSettingKey(value: string | undefined): value is SettingKey { return value === "signature_text" || value === "signature_url" || value === "sponsor_text" || value === "sponsor_url" || value === "emojis" || value === "avatar_emoji_id"; }
-function promptFor(key: SettingKey) { return ({ signature_text: "متن امضا را بفرستید؛ مثلا: بهرام قربانی", signature_url: "لینک امضا را بفرستید؛ مثلا: https://t.me/bahrameghorbani", sponsor_text: "متن اسپانسر را بفرستید؛ مثلا: پی‌کار", sponsor_url: "لینک اسپانسر را بفرستید؛ مثلا: https://t.me/paykaarcom", emojis: "ایموجی‌ها را با کاما جدا کنید؛ مثلا: 🔥,🚀,⚡️,💻,🧠", avatar_emoji_id: "حالا فقط Custom Emoji را بفرستید؛ ایموجی معمولی یا متن به‌عنوان پست پردازش نمی‌شود." })[key]; }
+function isSettingKey(value: string | undefined): value is SettingKey { return value === "signature_text" || value === "signature_url" || value === "sponsor_text" || value === "sponsor_url" || value === "emojis" || value === "avatar_emoji_id" || value === "x_emoji_id" || value === "instagram_emoji_id" || value === "telegram_emoji_id"; }
+function promptFor(key: SettingKey) { return ({ signature_text: "متن امضا را بفرستید؛ مثلا: بهرام قربانی", signature_url: "لینک امضا را بفرستید؛ مثلا: https://t.me/bahrameghorbani", sponsor_text: "متن اسپانسر را بفرستید؛ مثلا: رسانه فین‌تک | پی‌کار", sponsor_url: "لینک اسپانسر را بفرستید؛ مثلا: https://t.me/paykaarcom", emojis: "ایموجی‌ها را با کاما جدا کنید؛ مثلا: 🔥,🚀,⚡️,💻,🧠", avatar_emoji_id: "حالا فقط Custom Emoji آواتار را بفرستید؛ ایموجی معمولی یا متن به‌عنوان پست پردازش نمی‌شود.", x_emoji_id: "حالا Custom Emoji لوگوی X را بفرستید.", instagram_emoji_id: "حالا Custom Emoji لوگوی Instagram را بفرستید.", telegram_emoji_id: "حالا Custom Emoji لوگوی Telegram را بفرستید." })[key]; }
 async function settingPrompt(store: Store, ownerId: string): Promise<SettingKey | undefined> { const value = await store.prompt(ownerId); return isSettingKey(value) ? value : undefined; }
 async function saveSetting(key: SettingKey, message: TelegramMessage, store: Store, telegram: TelegramClient) {
-  if (key === "avatar_emoji_id") {
+  if (isCustomEmojiSetting(key)) {
     const value = customEmojiIdOf(message);
     if (!value) return telegram.sendMessage(message.chat.id, "فقط Custom Emoji را در همین گفت‌وگو بفرستید؛ ایموجی معمولی یا متن پذیرفته نمی‌شود.");
     await store.setSetting(key, value); await store.setPrompt(String(message.from!.id), "");
-    return telegram.sendMessage(message.chat.id, "آواتار کارت ذخیره شد و از کارت بعدی کنار Join the Bahram Community نمایش داده می‌شود.");
+    return telegram.sendMessage(message.chat.id, "Custom Emoji ذخیره شد و از کارت بعدی نمایش داده می‌شود.");
   }
   const value = content(message).trim(); const error = validateSetting(key, value); if (error) return telegram.sendMessage(message.chat.id, error); await store.setSetting(key, value); await store.setPrompt(String(message.from!.id), ""); return telegram.sendMessage(message.chat.id, "تنظیم ذخیره شد و از پست بعدی اعمال می‌شود.");
 }
