@@ -33,14 +33,15 @@ pnpm dev
 
 - `src/index.ts`: ورودی webhook و endpoint محافظت‌شدهٔ `/setup`
 - `src/bot/handler.ts`: دستورات، پیش‌نمایش، تأیید و انتشار
-- `src/domain/formatter.ts`: پاک‌سازی متن، ایموجی‌ها و امضای HTML نقل‌قولی
+- `src/domain/formatter.ts`: پاک‌سازی متن، ایموجی‌ها و HTML ساختاریافتهٔ Native Rich Message
 - `src/storage/store.ts`: idempotency، پیش‌نویس‌ها، تنظیمات و مالک bootstrap در D1
 - `src/telegram/client.ts`: فراخوانی Telegram Bot API
 - `migrations/`: طرح D1
 
 ## قواعد تغییر
 
-- امضا فقط یک‌بار و در `blockquote` تولید شود.
+- امضا فقط یک‌بار و به‌صورت جدول `bordered` در Rich Message تولید شود.
+- متن، رسانه و کارت باید با `sendRichMessage` در یک پیام منتشر شوند؛ برای انتشار محتوا به `sendMessage` یا caption قدیمی برنگردید.
 - `file_id` تلگرام را حفظ کنید؛ فایل را بی‌دلیل دانلود یا ذخیره نکنید.
 - انتشار باید تأیید صریح داشته باشد و وضعیت `READY_FOR_REVIEW → PUBLISHING` را اتمیک نگه دارد.
 - برای قابلیت جدید، حداقل یک تست Vitest اضافه یا به‌روزرسانی کنید.

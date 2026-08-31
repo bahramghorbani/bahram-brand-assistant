@@ -19,7 +19,7 @@ export function decorate(input: string, settings: Record<SettingKey, string>, so
     .map((paragraph) => `<p>${escapeHtml(paragraph).replace(/\n/g, "<br>")}</p>`)
     .join("");
   const avatar = settings.avatar_emoji_id ? `<tg-emoji emoji-id="${escapeHtml(settings.avatar_emoji_id)}">🧑</tg-emoji> ` : "";
-  const signature = `<hr/><p><b>${avatar}Join the Bahram Community</b></p><table bordered compact><tr><td align="center"><a href="https://x.com/bahr4m">𝕏 @bahr4m</a></td><td align="center"><a href="https://instagram.com/bahrameghorbani">◎ @bahrameghorbani</a></td></tr><tr><td align="center"><a href="https://t.me/bahrameghorbani">✈️ @bahrameghorbani</a></td><td align="center"><a href="${escapeHtml(settings.sponsor_url)}">🤝 Sponsor · ${escapeHtml(settings.sponsor_text)}</a></td></tr><tr><td colspan="2" align="center"><a href="https://paykaar.com">🌐 paykaar.com</a></td></tr></table>`;
+  const signature = `<hr/><p><b>${avatar}<a href="${escapeHtml(settings.signature_url)}">${escapeHtml(settings.signature_text)}</a></b></p><table bordered compact><tr><td align="center"><a href="https://x.com/bahr4m">𝕏 @bahr4m</a></td><td align="center"><a href="https://instagram.com/bahrameghorbani">◎ @bahrameghorbani</a></td></tr><tr><td align="center"><a href="https://t.me/bahrameghorbani">✈️ @bahrameghorbani</a></td><td align="center"><a href="${escapeHtml(settings.sponsor_url)}">🤝 Sponsor · ${escapeHtml(settings.sponsor_text)}</a></td></tr><tr><td colspan="2" align="center"><a href="https://paykaar.com">🌐 paykaar.com</a></td></tr></table>`;
   return `${bodyHtml}${signature}`;
 }
 
