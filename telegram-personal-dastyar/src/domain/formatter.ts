@@ -13,7 +13,8 @@ export function decorate(input: string, settings: Record<SettingKey, string>, so
   }
   body = removeTrailingSourceFooter(body);
   body = addParagraphEmojis(body, settings.emojis);
-  const signature = `<blockquote><b>${escapeHtml(settings.signature_text)}</b>\n\n───\n<a href="${escapeHtml(settings.signature_url)}">${escapeHtml(linkLabel(settings.signature_url))}</a>\n\n───\n🤝 <b>Sponsor</b>\n\n${escapeHtml(settings.sponsor_text)}\n<a href="${escapeHtml(settings.sponsor_url)}">${escapeHtml(linkLabel(settings.sponsor_url))}</a></blockquote>`;
+  const avatar = settings.avatar_emoji_id ? `<tg-emoji emoji-id="${escapeHtml(settings.avatar_emoji_id)}">🧑</tg-emoji> ` : "";
+  const signature = `<blockquote><b>${avatar}Join the Bahram Community</b>\n\n╭────────────────────╮\n│ <a href="https://x.com/bahr4m">𝕏 @bahr4m</a>\n│ <a href="https://t.me/bahrameghorbani">✈️ @bahrameghorbani</a>\n│ <a href="https://instagram.com/bahrameghorbani">◎ @bahrameghorbani</a>\n├────────────────────┤\n│ 🤝 <b>Sponsor</b>\n│ ${escapeHtml(settings.sponsor_text)}\n│ <a href="${escapeHtml(settings.sponsor_url)}">${escapeHtml(linkLabel(settings.sponsor_url))}</a>\n│ <a href="https://paykaar.com">🌐 paykaar.com</a>\n╰────────────────────╯</blockquote>`;
   return `${escapeHtml(body).replace(/\n/g, "\n")}\n\n${signature}`;
 }
 

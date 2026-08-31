@@ -1,18 +1,28 @@
 import { describe, expect, it } from "vitest";
 import { decorate } from "../src/domain/formatter";
 
-const settings = { signature_text: "بهرام قربانی", signature_url: "https://t.me/bahrameghorbani", sponsor_text: "پی‌کار", sponsor_url: "https://t.me/paykaarcom", emojis: "🔥,🚀" };
+const settings = { signature_text: "بهرام قربانی", signature_url: "https://t.me/bahrameghorbani", sponsor_text: "پی‌کار", sponsor_url: "https://t.me/paykaarcom", emojis: "🔥,🚀", avatar_emoji_id: "5368324170671202286" };
 
 describe("decorate", () => {
   it("adds rotating paragraph emojis and an HTML blockquote signature", () => {
     const value = decorate("پاراگراف اول\n\nپاراگراف دوم", settings);
     expect(value).toContain("🔥 پاراگراف اول\n\n🚀 پاراگراف دوم");
-    expect(value).toContain("<blockquote><b>بهرام قربانی</b>\n\n───\n<a href=\"https://t.me/bahrameghorbani\">@bahrameghorbani</a>");
-    expect(value).toContain("🤝 <b>Sponsor</b>\n\nپی‌کار\n<a href=\"https://t.me/paykaarcom\">@paykaarcom</a>");
+    expect(value).toContain("<blockquote><b><tg-emoji emoji-id=\"5368324170671202286\">🧑</tg-emoji> Join the Bahram Community</b>");
+    expect(value).toContain("│ 🤝 <b>Sponsor</b>\n│ پی‌کار\n│ <a href=\"https://t.me/paykaarcom\">@paykaarcom</a>");
   });
   it("removes an identifiable forwarded channel reference and trailing footer", () => {
     const value = decorate("خبر مهم\n\n@sourcechannel", settings, { type: "channel", chat: { id: 1, type: "channel", username: "sourcechannel" } });
     expect(value).not.toContain("sourcechannel");
     expect(value).toContain("🔥 خبر مهم");
+  });
+
+  it("renders the custom emoji and bordered community links in the native signature card", () => {
+    const value = decorate("خبر", settings);
+    expect(value).toContain('<b><tg-emoji emoji-id="5368324170671202286">🧑</tg-emoji> Join the Bahram Community</b>');
+    expect(value).toContain('<a href="https://x.com/bahr4m">𝕏 @bahr4m</a>');
+    expect(value).toContain('<a href="https://t.me/bahrameghorbani">✈️ @bahrameghorbani</a>');
+    expect(value).toContain('<a href="https://instagram.com/bahrameghorbani">◎ @bahrameghorbani</a>');
+    expect(value).toContain('<a href="https://paykaar.com">🌐 paykaar.com</a>');
+    expect(value).toContain("<blockquote>");
   });
 });

@@ -14,6 +14,7 @@ export interface Env {
   DEFAULT_SPONSOR_TEXT?: string;
   DEFAULT_SPONSOR_URL?: string;
   DEFAULT_EMOJIS?: string;
+  DEFAULT_AVATAR_EMOJI_ID?: string;
 }
 
 export interface Media { type: Exclude<ContentType, "text" | "album">; fileId: string; }
@@ -27,10 +28,12 @@ export interface TelegramChat { id: number; type: string; username?: string; }
 export interface TelegramMessage {
   message_id: number; text?: string; caption?: string; media_group_id?: string;
   from?: { id: number }; chat: TelegramChat;
+  entities?: TelegramMessageEntity[]; caption_entities?: TelegramMessageEntity[];
   photo?: Array<{ file_id: string; width: number; height: number }>;
   video?: { file_id: string }; audio?: { file_id: string }; document?: { file_id: string };
   forward_origin?: { type: string; chat?: TelegramChat; message_id?: number };
 }
+export interface TelegramMessageEntity { type: string; offset: number; length: number; custom_emoji_id?: string; }
 export interface TelegramUpdate {
   update_id: number; message?: TelegramMessage;
   callback_query?: { id: string; from: { id: number }; data?: string; message?: TelegramMessage };

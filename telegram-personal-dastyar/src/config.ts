@@ -4,7 +4,7 @@ export interface Config {
   authorizedUserIds: Set<string>; destinationChatId: string; destinationUsername?: string;
   bootstrapCode?: string; defaults: Record<SettingKey, string>;
 }
-export type SettingKey = "signature_text" | "signature_url" | "sponsor_text" | "sponsor_url" | "emojis";
+export type SettingKey = "signature_text" | "signature_url" | "sponsor_text" | "sponsor_url" | "emojis" | "avatar_emoji_id";
 
 const normalize = (value: string) => value.replace(/\r\n?/g, "\n").trim();
 const validUrl = (value: string) => /^https:\/\/(?:t\.me\/|telegram\.me\/|[a-z0-9.-]+\/)/iu.test(value);
@@ -22,9 +22,11 @@ export function configFromEnv(env: Env): Config {
     signature_url: normalize(env.DEFAULT_SIGNATURE_URL ?? "https://t.me/bahrameghorbani"),
     sponsor_text: normalize(env.DEFAULT_SPONSOR_TEXT ?? "رسانه فین‌تک ایران | پی کار"),
     sponsor_url: normalize(env.DEFAULT_SPONSOR_URL ?? "https://t.me/paykaarcom"),
-    emojis: normalize(env.DEFAULT_EMOJIS ?? "🔥,🚀,⚡️,💻,🧠")
+    emojis: normalize(env.DEFAULT_EMOJIS ?? "🔥,🚀,⚡️,💻,🧠"),
+    avatar_emoji_id: normalize(env.DEFAULT_AVATAR_EMOJI_ID ?? "")
   };
   if (!validUrl(defaults.signature_url) || !validUrl(defaults.sponsor_url)) throw new Error("Default signature and sponsor URLs must be HTTPS");
+  if (defaults.avatar_emoji_id && !/^\d+$/u.test(defaults.avatar_emoji_id)) throw new Error("DEFAULT_AVATAR_EMOJI_ID must be numeric");
   return { authorizedUserIds: new Set(bootstrapMode ? [] : ids), destinationChatId: env.DESTINATION_CHAT_ID, destinationUsername: env.DESTINATION_CHANNEL_USERNAME?.replace(/^@/u, ""), bootstrapCode, defaults };
 }
 
@@ -32,5 +34,6 @@ export function validateSetting(key: SettingKey, value: string): string | undefi
   if (!value.trim() || value.length > 200) return "مقدار باید بین ۱ تا ۲۰۰ کاراکتر باشد.";
   if ((key === "signature_url" || key === "sponsor_url") && !validUrl(value.trim())) return "آدرس باید HTTPS باشد؛ مانند https://t.me/paykaarcom";
   if (key === "emojis" && value.split(",").filter(Boolean).length > 12) return "حداکثر ۱۲ ایموجی، با کاما از هم جدا شوند.";
+  if (key === "avatar_emoji_id" && !/^\d+$/u.test(value.trim())) return "فقط یک Custom Emoji را بفرستید؛ ایموجی معمولی قابل ذخیره نیست.";
   return undefined;
 }

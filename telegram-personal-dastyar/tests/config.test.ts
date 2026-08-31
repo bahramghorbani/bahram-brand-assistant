@@ -8,6 +8,7 @@ describe("bootstrap configuration", () => {
   it("allows a secure one-time owner bootstrap", () => {
     expect(configFromEnv(base).authorizedUserIds.size).toBe(0);
     expect(configFromEnv(base).bootstrapCode).toBe(base.BOOTSTRAP_CODE);
+    expect(configFromEnv(base).defaults.avatar_emoji_id).toBe("");
   });
   it("rejects a weak bootstrap code", () => {
     expect(() => configFromEnv({ ...base, BOOTSTRAP_CODE: "short" })).toThrow("BOOTSTRAP_CODE");
