@@ -13,9 +13,14 @@ export function decorate(input: string, settings: Record<SettingKey, string>, so
   }
   body = removeTrailingSourceFooter(body);
   body = addParagraphEmojis(body, settings.emojis);
+  const bodyHtml = body
+    .split(/\n{2,}/u)
+    .filter(Boolean)
+    .map((paragraph) => `<p>${escapeHtml(paragraph).replace(/\n/g, "<br>")}</p>`)
+    .join("");
   const avatar = settings.avatar_emoji_id ? `<tg-emoji emoji-id="${escapeHtml(settings.avatar_emoji_id)}">🧑</tg-emoji> ` : "";
-  const signature = `<blockquote><b>${avatar}Join the Bahram Community</b>\n\n╭────────────────────╮\n│ <a href="https://x.com/bahr4m">𝕏 @bahr4m</a>\n│ <a href="https://t.me/bahrameghorbani">✈️ @bahrameghorbani</a>\n│ <a href="https://instagram.com/bahrameghorbani">◎ @bahrameghorbani</a>\n├────────────────────┤\n│ 🤝 <b>Sponsor</b>\n│ ${escapeHtml(settings.sponsor_text)}\n│ <a href="${escapeHtml(settings.sponsor_url)}">${escapeHtml(linkLabel(settings.sponsor_url))}</a>\n│ <a href="https://paykaar.com">🌐 paykaar.com</a>\n╰────────────────────╯</blockquote>`;
-  return `${escapeHtml(body).replace(/\n/g, "\n")}\n\n${signature}`;
+  const signature = `<hr/><p><b>${avatar}Join the Bahram Community</b></p><table bordered compact><tr><td align="center"><a href="https://x.com/bahr4m">𝕏 @bahr4m</a></td><td align="center"><a href="https://instagram.com/bahrameghorbani">◎ @bahrameghorbani</a></td></tr><tr><td align="center"><a href="https://t.me/bahrameghorbani">✈️ @bahrameghorbani</a></td><td align="center"><a href="${escapeHtml(settings.sponsor_url)}">🤝 Sponsor · ${escapeHtml(settings.sponsor_text)}</a></td></tr><tr><td colspan="2" align="center"><a href="https://paykaar.com">🌐 paykaar.com</a></td></tr></table>`;
+  return `${bodyHtml}${signature}`;
 }
 
 function addParagraphEmojis(body: string, emojiText: string): string {
@@ -39,9 +44,7 @@ function removeTrailingSourceFooter(body: string): string {
   return lines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
 }
 function escapeRegExp(value: string) { return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); }
-function linkLabel(url: string) { const match = url.match(/^https:\/\/(?:t\.me|telegram\.me)\/([A-Za-z0-9_]{3,})\/?$/u); return match ? `@${match[1]}` : url; }
-
-export function telegramLimitError(value: string, type: "text" | "caption"): string | undefined {
-  const limit = type === "text" ? 4096 : 1024;
-  return [...value.replace(/<[^>]+>/g, "")].length > limit ? `متن نهایی از سقف ${limit} کاراکتر بیشتر است.` : undefined;
+export function telegramLimitError(value: string): string | undefined {
+  const limit = 32768;
+  return [...value.replace(/<[^>]+>/g, "")].length > limit ? `متن نهایی از سقف ${limit} کاراکتر Rich Message بیشتر است.` : undefined;
 }

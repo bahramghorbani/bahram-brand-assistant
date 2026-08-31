@@ -9,6 +9,16 @@ export class TelegramClient {
     return payload.result as T;
   }
   sendMessage(chatId: string | number, text: string, replyMarkup?: unknown) { return this.call<{ message_id: number }>("sendMessage", { chat_id: chatId, text, parse_mode: "HTML", link_preview_options: { is_disabled: true }, reply_markup: replyMarkup }); }
+  sendRichMessage(chatId: string | number, html: string, media: Media[] = [], replyMarkup?: unknown) {
+    const attachments = media.map((item, index) => ({ id: `media${index}`, media: { type: item.type, media: item.fileId } }));
+    const mediaBlocks = media.map((item, index) => richMediaBlock(item, `media${index}`));
+    const mediaHtml = mediaBlocks.length > 1 ? `<tg-collage>${mediaBlocks.join("")}</tg-collage>` : (mediaBlocks[0] ?? "");
+    return this.call<{ message_id: number }>("sendRichMessage", {
+      chat_id: chatId,
+      rich_message: { html: `${mediaHtml}${html}`, ...(attachments.length ? { media: attachments } : {}) },
+      reply_markup: replyMarkup
+    });
+  }
   sendMedia(chatId: string | number, media: Media, caption: string, replyMarkup?: unknown) {
     const method = media.type === "photo" ? "sendPhoto" : media.type === "video" ? "sendVideo" : media.type === "audio" ? "sendAudio" : "sendDocument";
     const field = media.type === "photo" ? "photo" : media.type === "video" ? "video" : media.type === "audio" ? "audio" : "document";
@@ -21,4 +31,11 @@ export class TelegramClient {
   setWebhook(url: string, secretToken: string) { return this.call<boolean>("setWebhook", { url, secret_token: secretToken, allowed_updates: ["message", "callback_query"], drop_pending_updates: false }); }
   getMe() { return this.call<{ username?: string }>("getMe", {}); }
   getChat(chatId: string) { return this.call<{ id: number; type: string }>("getChat", { chat_id: chatId }); }
+}
+
+function richMediaBlock(media: Media, id: string): string {
+  if (media.type === "photo") return `<img src="tg://photo?id=${id}"/>`;
+  if (media.type === "video") return `<video src="tg://video?id=${id}"></video>`;
+  if (media.type === "audio") return `<audio src="tg://audio?id=${id}"></audio>`;
+  return `<tg-document src="tg://document?id=${id}"></tg-document>`;
 }

@@ -26,7 +26,7 @@ export async function handleUpdate(update: TelegramUpdate, store: Store, telegra
   const editing = await store.editing(String(message.from!.id));
   if (editing) {
     if (mediaOf(message)) return telegram.sendMessage(message.chat.id, "برای ویرایش، فقط متن ساده بفرستید یا /cancel را بزنید.");
-    const formatted = decorate(content(message), settings); const issue = telegramLimitError(formatted, editing.content_type === "text" ? "text" : "caption");
+    const formatted = decorate(content(message), settings); const issue = telegramLimitError(formatted);
     if (issue) return telegram.sendMessage(message.chat.id, issue);
     await store.updateContent(editing.id, formatted); const draft = await store.get(editing.id); if (draft) await preview(draft, store, telegram, message.chat.id); return;
   }
@@ -34,7 +34,7 @@ export async function handleUpdate(update: TelegramUpdate, store: Store, telegra
   if (!media && !message.text) return telegram.sendMessage(message.chat.id, "متن، عکس، ویدئو، فایل صوتی یا یک پست فورواردی بفرستید.");
   const formatted = decorate(content(message), settings, message.forward_origin);
   const type: ContentType = media ? media.type : "text";
-  const issue = telegramLimitError(formatted, type === "text" ? "text" : "caption");
+  const issue = telegramLimitError(formatted);
   if (issue) return telegram.sendMessage(message.chat.id, issue);
   const ownerId = String(message.from!.id); const expiresAt = new Date(Date.now() + 24 * 3600_000).toISOString();
   if (message.media_group_id && media) {
@@ -67,17 +67,15 @@ async function handleCallback(callback: NonNullable<TelegramUpdate["callback_que
   if (action === "cancel") { const done = await store.setStatus(draft.id, draft.owner_id, "READY_FOR_REVIEW", "CANCELLED"); return telegram.answerCallbackQuery(callback.id, done ? "لغو شد." : "این پیش‌نویس دیگر فعال نیست."); }
   if (!(await store.setStatus(draft.id, draft.owner_id, "READY_FOR_REVIEW", "PUBLISHING"))) return telegram.answerCallbackQuery(callback.id, "این پیش‌نویس قبلاً پردازش شده است.");
   try {
-    const media = store.media(draft); const sent = draft.content_type === "text" ? await telegram.sendMessage(config.destinationChatId, draft.cleaned_content) : draft.content_type === "album" ? (await telegram.sendAlbum(config.destinationChatId, media, draft.cleaned_content))[0]! : await telegram.sendMedia(config.destinationChatId, media[0]!, draft.cleaned_content);
+    const media = store.media(draft); const sent = await telegram.sendRichMessage(config.destinationChatId, draft.cleaned_content, media);
     await store.complete(draft.id, sent.message_id); await telegram.answerCallbackQuery(callback.id, "منتشر شد."); const link = config.destinationUsername ? `\nhttps://t.me/${config.destinationUsername}/${sent.message_id}` : ""; return telegram.sendMessage(callback.message?.chat.id ?? callback.from.id, `پست یک‌بار منتشر شد.${link}`);
   } catch { await store.fail(draft.id, "Telegram publication failed"); return telegram.answerCallbackQuery(callback.id, "انتشار ناموفق بود؛ پیش‌نویس حفظ شد."); }
 }
 
 async function preview(draft: Draft, store: Store, telegram: TelegramClient, chatId: number) {
   const intro = "پیش‌نمایش خصوصی است و هنوز منتشر نشده است."; const media = store.media(draft);
-  if (draft.content_type === "text") return telegram.sendMessage(chatId, `${intro}\n\n${draft.cleaned_content}`, buttons(draft.id));
   await telegram.sendMessage(chatId, intro);
-  if (draft.content_type === "album") { await telegram.sendAlbum(chatId, media, draft.cleaned_content); return telegram.sendMessage(chatId, "پس از بررسی، انتشار را تأیید یا لغو کنید.", buttons(draft.id)); }
-  return telegram.sendMedia(chatId, media[0]!, draft.cleaned_content, buttons(draft.id));
+  return telegram.sendRichMessage(chatId, draft.cleaned_content, media, buttons(draft.id));
 }
 function mediaOf(message: TelegramMessage): Media | undefined { if (message.photo?.at(-1)) return { type: "photo", fileId: message.photo.at(-1)!.file_id }; if (message.video) return { type: "video", fileId: message.video.file_id }; if (message.audio) return { type: "audio", fileId: message.audio.file_id }; if (message.document) return { type: "document", fileId: message.document.file_id }; }
 function idOf() { return crypto.randomUUID().replaceAll("-", "").slice(0, 12); }
