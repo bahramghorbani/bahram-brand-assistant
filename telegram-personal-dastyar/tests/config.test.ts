@@ -16,7 +16,10 @@ describe("bootstrap configuration", () => {
   it("rejects a weak bootstrap code", () => {
     expect(() => configFromEnv({ ...base, BOOTSTRAP_CODE: "short" })).toThrow("BOOTSTRAP_CODE");
   });
-  it("rejects a non-numeric social custom emoji id", () => {
+  it("rejects text that is neither a custom emoji id nor a free emoji", () => {
     expect(() => configFromEnv({ ...base, DEFAULT_X_EMOJI_ID: "not-an-id" } as Env)).toThrow("DEFAULT_X_EMOJI_ID");
+  });
+  it("allows a free standard emoji as a social icon", () => {
+    expect(configFromEnv({ ...base, DEFAULT_INSTAGRAM_EMOJI_ID: "📸" } as Env).defaults.instagram_emoji_id).toBe("📸");
   });
 });

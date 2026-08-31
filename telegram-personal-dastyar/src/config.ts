@@ -30,7 +30,7 @@ export function configFromEnv(env: Env): Config {
   };
   if (!validUrl(defaults.signature_url) || !validUrl(defaults.sponsor_url)) throw new Error("Default signature and sponsor URLs must be HTTPS");
   for (const [envKey, settingKey] of [["DEFAULT_AVATAR_EMOJI_ID", "avatar_emoji_id"], ["DEFAULT_X_EMOJI_ID", "x_emoji_id"], ["DEFAULT_INSTAGRAM_EMOJI_ID", "instagram_emoji_id"], ["DEFAULT_TELEGRAM_EMOJI_ID", "telegram_emoji_id"]] as const) {
-    if (defaults[settingKey] && !/^\d+$/u.test(defaults[settingKey])) throw new Error(`${envKey} must be numeric`);
+    if (defaults[settingKey] && !isEmojiSettingValue(defaults[settingKey])) throw new Error(`${envKey} must be a custom emoji ID or a standard emoji`);
   }
   return { authorizedUserIds: new Set(bootstrapMode ? [] : ids), destinationChatId: env.DESTINATION_CHAT_ID, destinationUsername: env.DESTINATION_CHANNEL_USERNAME?.replace(/^@/u, ""), bootstrapCode, defaults };
 }
@@ -39,10 +39,18 @@ export function validateSetting(key: SettingKey, value: string): string | undefi
   if (!value.trim() || value.length > 200) return "مقدار باید بین ۱ تا ۲۰۰ کاراکتر باشد.";
   if ((key === "signature_url" || key === "sponsor_url") && !validUrl(value.trim())) return "آدرس باید HTTPS باشد؛ مانند https://t.me/paykaarcom";
   if (key === "emojis" && value.split(",").filter(Boolean).length > 12) return "حداکثر ۱۲ ایموجی، با کاما از هم جدا شوند.";
-  if (isCustomEmojiSetting(key) && !/^\d+$/u.test(value.trim())) return "فقط یک Custom Emoji را بفرستید؛ ایموجی معمولی قابل ذخیره نیست.";
+  if (isCustomEmojiSetting(key) && !isEmojiSettingValue(value)) return "یک Custom Emoji یا ایموجی استاندارد رایگان بفرستید؛ متن پذیرفته نمی‌شود.";
   return undefined;
 }
 
 export function isCustomEmojiSetting(key: SettingKey): boolean {
   return key === "avatar_emoji_id" || key === "x_emoji_id" || key === "instagram_emoji_id" || key === "telegram_emoji_id";
+}
+
+export function isEmojiSettingValue(value: string): boolean {
+  const normalized = value.trim();
+  if (/^\d+$/u.test(normalized)) return true;
+  if (!normalized || [...normalized].length > 8) return false;
+  const withoutX = normalized.replaceAll("𝕏", "");
+  return (/\p{Extended_Pictographic}/u.test(normalized) || normalized.includes("𝕏")) && !/[\p{L}\p{N}]/u.test(withoutX);
 }

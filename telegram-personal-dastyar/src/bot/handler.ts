@@ -84,14 +84,15 @@ async function tryBootstrap(message: TelegramMessage, store: Store, config: Conf
   return Boolean(code && config.bootstrapCode && code === config.bootstrapCode && await store.claimBootstrapOwner(String(message.from!.id)));
 }
 function isSettingKey(value: string | undefined): value is SettingKey { return value === "signature_text" || value === "signature_url" || value === "sponsor_text" || value === "sponsor_url" || value === "emojis" || value === "avatar_emoji_id" || value === "x_emoji_id" || value === "instagram_emoji_id" || value === "telegram_emoji_id"; }
-function promptFor(key: SettingKey) { return ({ signature_text: "متن امضا را بفرستید؛ مثلا: بهرام قربانی", signature_url: "لینک امضا را بفرستید؛ مثلا: https://t.me/bahrameghorbani", sponsor_text: "متن اسپانسر را بفرستید؛ مثلا: رسانه فین‌تک | پی‌کار", sponsor_url: "لینک اسپانسر را بفرستید؛ مثلا: https://t.me/paykaarcom", emojis: "ایموجی‌ها را با کاما جدا کنید؛ مثلا: 🔥,🚀,⚡️,💻,🧠", avatar_emoji_id: "حالا فقط Custom Emoji آواتار را بفرستید؛ ایموجی معمولی یا متن به‌عنوان پست پردازش نمی‌شود.", x_emoji_id: "حالا Custom Emoji لوگوی X را بفرستید.", instagram_emoji_id: "حالا Custom Emoji لوگوی Instagram را بفرستید.", telegram_emoji_id: "حالا Custom Emoji لوگوی Telegram را بفرستید." })[key]; }
+function promptFor(key: SettingKey) { return ({ signature_text: "متن امضا را بفرستید؛ مثلا: بهرام قربانی", signature_url: "لینک امضا را بفرستید؛ مثلا: https://t.me/bahrameghorbani", sponsor_text: "متن اسپانسر را بفرستید؛ مثلا: رسانه فین‌تک | پی‌کار", sponsor_url: "لینک اسپانسر را بفرستید؛ مثلا: https://t.me/paykaarcom", emojis: "ایموجی‌ها را با کاما جدا کنید؛ مثلا: 🔥,🚀,⚡️,💻,🧠", avatar_emoji_id: "Custom Emoji یا ایموجی استاندارد رایگان آواتار را بفرستید؛ متن به‌عنوان پست پردازش نمی‌شود.", x_emoji_id: "Custom Emoji یا ایموجی استاندارد رایگان آیکون X را بفرستید.", instagram_emoji_id: "Custom Emoji یا ایموجی استاندارد رایگان آیکون Instagram را بفرستید.", telegram_emoji_id: "Custom Emoji یا ایموجی استاندارد رایگان آیکون Telegram را بفرستید." })[key]; }
 async function settingPrompt(store: Store, ownerId: string): Promise<SettingKey | undefined> { const value = await store.prompt(ownerId); return isSettingKey(value) ? value : undefined; }
 async function saveSetting(key: SettingKey, message: TelegramMessage, store: Store, telegram: TelegramClient) {
   if (isCustomEmojiSetting(key)) {
-    const value = customEmojiIdOf(message);
-    if (!value) return telegram.sendMessage(message.chat.id, "فقط Custom Emoji را در همین گفت‌وگو بفرستید؛ ایموجی معمولی یا متن پذیرفته نمی‌شود.");
+    const value = customEmojiIdOf(message) ?? content(message).trim();
+    const error = validateSetting(key, value);
+    if (error) return telegram.sendMessage(message.chat.id, error);
     await store.setSetting(key, value); await store.setPrompt(String(message.from!.id), "");
-    return telegram.sendMessage(message.chat.id, "Custom Emoji ذخیره شد و از کارت بعدی نمایش داده می‌شود.");
+    return telegram.sendMessage(message.chat.id, "آیکون ذخیره شد و از کارت بعدی نمایش داده می‌شود.");
   }
   const value = content(message).trim(); const error = validateSetting(key, value); if (error) return telegram.sendMessage(message.chat.id, error); await store.setSetting(key, value); await store.setPrompt(String(message.from!.id), ""); return telegram.sendMessage(message.chat.id, "تنظیم ذخیره شد و از پست بعدی اعمال می‌شود.");
 }
